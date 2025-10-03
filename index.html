@@ -1,43 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
   <title>Egg Temperature Monitor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      text-align: center;
-      padding-top: 50px;
-    }
+    body { font-family: Arial, sans-serif; background:#f5f5f5; text-align:center; padding:50px; }
+    h1 { margin-bottom: 24px; }
     .card {
-      display: inline-block;
-      padding: 30px 50px;
-      border-radius: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      font-size: 2em;
-      font-weight: bold;
-      transition: background 0.5s, color 0.5s;
+      display:inline-block; padding:28px 44px; border-radius:16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      font-size:2.2rem; font-weight:700; min-width:180px;
+      transition: background 0.4s, color 0.4s, transform 0.2s;
     }
-    .green { background: #d4edda; color: #155724; }
-    .yellow { background: #fff3cd; color: #856404; }
-    .red { background: #f8d7da; color: #721c24; }
+    .card.green { background:#d4edda; color:#155724; }
+    .card.yellow { background:#fff3cd; color:#856404; }
+    .card.red { background:#f8d7da; color:#721c24; }
+    .small { font-size:0.6em; display:block; margin-top:8px; font-weight:600; opacity:0.85; }
   </style>
 </head>
 <body>
   <h1>🥚 Egg Temperature Monitor</h1>
-  <div id="tempCard" class="card green">Loading...</div>
+  <div id="tempCard" class="card green">Loading…<span class="small">fetching temperature</span></div>
 
   <script>
+    // <-- paste the raw JSON URL you copied from the other repo here:
+    const RAW_JSON_URL = "https://raw.githubusercontent.com/<your-username>/egg-data/main/egg.json";
+
     async function fetchTemperature() {
+      const card = document.getElementById("tempCard");
       try {
-        const response = await fetch("egg.json?_=" + new Date().getTime()); 
-        const data = await response.json();
-        const temp = data.temperature;
-        const card = document.getElementById("tempCard");
+        // add timestamp to avoid caching
+        const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
+        if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
+        const data = await resp.json();
+        const temp = Number(data.temperature);
+        if (Number.isNaN(temp)) throw new Error("Invalid temperature value");
 
         card.textContent = temp + "°C";
 
+        // append small label
+        const small = document.createElement("span");
+        small.className = "small";
+        small.textContent = "updated: " + new Date().toLocaleTimeString();
+        card.appendChild(small);
+
+        // color rules
         if (temp > 80) {
           card.className = "card red";
         } else if (temp > 50) {
@@ -45,11 +53,18 @@
         } else {
           card.className = "card green";
         }
-      } catch (error) {
-        console.error("Error fetching temperature:", error);
+      } catch (err) {
+        console.error(err);
+        card.textContent = "Error";
+        card.className = "card yellow";
+        const small = document.createElement("span");
+        small.className = "small";
+        small.textContent = String(err).slice(0, 60);
+        card.appendChild(small);
       }
     }
 
+    // First fetch immediately, then every 5 seconds
     fetchTemperature();
     setInterval(fetchTemperature, 5000);
   </script>
