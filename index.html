@@ -2,65 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Egg Temperature Monitor</title>
+  <title>🥚 Egg Temperature Monitor</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; text-align:center; padding:50px; }
-    h1 { margin-bottom: 24px; }
-    .card {
-      display:inline-block; padding:28px 44px; border-radius:16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      font-size:2.2rem; font-weight:700; min-width:180px;
-      transition: background 0.4s, color 0.4s, transform 0.2s;
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(to right, #f7f9fc, #e6eef9);
+      text-align: center;
+      padding: 60px;
     }
-    .card.green { background:#d4edda; color:#155724; }
-    .card.yellow { background:#fff3cd; color:#856404; }
-    .card.red { background:#f8d7da; color:#721c24; }
-    .small { font-size:0.6em; display:block; margin-top:8px; font-weight:600; opacity:0.85; }
+    h1 {
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .card {
+      display: inline-block;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      font-size: 2.4rem;
+      font-weight: bold;
+      min-width: 200px;
+      transition: background 0.4s, color 0.4s, transform 0.3s;
+    }
+    .card.green {
+      background: #d4edda;
+      color: #155724;
+    }
+    .card.yellow {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .card.red {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .small {
+      font-size: 0.6em;
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
   <h1>🥚 Egg Temperature Monitor</h1>
-  <div id="tempCard" class="card green">Loading…<span class="small">fetching temperature</span></div>
+  <div id="tempCard" class="card green">Loading...<span class="small">Fetching data</span></div>
 
-  <script>
-    const RAW_JSON_URL = "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json";
+  <script> 
+    document.addEventListener("DOMContentLoaded", () => {
+      const RAW_JSON_URL = "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json";
 
-    async function fetchTemperature() {
-      const card = document.getElementById("tempCard");
-      try {
-        const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
-        if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
-        const data = await resp.json();
-        const temp = Number(data.temperature);
+      async function fetchTemperature() {
+        const card = document.getElementById("tempCard");
+        try {
+          const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
+          if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
+          const data = await resp.json();
+          const temp = Number(data.temperature);
 
-        card.textContent = temp + "°C";
+          // Clear previous content
+          card.innerHTML = temp + "°C";
+          const small = document.createElement("span");
+          small.className = "small";
+          small.textContent = "updated: " + new Date().toLocaleTimeString();
+          card.appendChild(small);
 
-        const small = document.createElement("span");
-        small.className = "small";
-        small.textContent = "updated: " + new Date().toLocaleTimeString();
-        card.appendChild(small);
+          // Update color based on temperature
+          if (temp > 80) {
+            card.className = "card red";
+          } else if (temp > 50) {
+            card.className = "card yellow";
+          } else {
+            card.className = "card green";
+          }
 
-        if (temp > 80) {
-          card.className = "card red";
-        } else if (temp > 50) {
+        } catch (err) {
+          console.error(err);
+          card.innerHTML = "Error <span class='small'>" + err.message + "</span>";
           card.className = "card yellow";
-        } else {
-          card.className = "card green";
         }
-      } catch (err) {
-        console.error(err);
-        card.textContent = "Error";
-        card.className = "card yellow";
-        const small = document.createElement("span");
-        small.className = "small";
-        small.textContent = String(err).slice(0, 60);
-        card.appendChild(small);
       }
-    }
 
-    fetchTemperature();
-    setInterval(fetchTemperature, 5000);
+      fetchTemperature(); // First fetch
+      setInterval(fetchTemperature, 5000); // Refresh every 5s
+    });
   </script>
 </body>
 </html>
