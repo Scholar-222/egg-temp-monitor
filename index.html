@@ -1,8 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>🥚 Egg Temperature Monitor</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(to right, #f7f9fc, #e6eef9);
+      text-align: center;
+      padding: 60px;
+    }
+    h1 { color:#333; margin-bottom:30px; }
+    .card {
+      display:inline-block;
+      padding:40px 60px;
+      border-radius:20px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.1);
+      font-size:2.4rem;
+      font-weight:bold;
+      min-width:200px;
+      transition:background 0.4s, color 0.4s;
+    }
+    .green { background:#d4edda; color:#155724; }
+    .yellow { background:#fff3cd; color:#856404; }
+    .red { background:#f8d7da; color:#721c24; }
+    .small { font-size:0.6em; display:block; margin-top:10px; opacity:0.8; }
+  </style>
 </head>
-  <body>testing</body>
+<body>
+  <h1>🥚 Egg Temperature Monitor</h1>
 
+  <div id="tempCard" class="card green">
+    Loading...
+    <span class="small">Fetching data...</span>
+  </div>
 
+  <script>
+    const RAW_JSON_URL = "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json";
+
+    async function fetchTemperature() {
+      const card = document.getElementById("tempCard");
+      if (!card) {
+        console.error("tempCard not found!");
+        return;
+      }
+
+      try {
+        const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
+        if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
+        const data = await resp.json();
+        const temp = Number(data.temperature);
+
+        // update UI
+        card.innerHTML = `${temp}°C <span class="small">Updated: ${new Date().toLocaleTimeString()}</span>`;
+
+        if (temp > 80) card.className = "card red";
+        else if (temp > 50) card.className = "card yellow";
+        else card.className = "card green";
+      } catch (err) {
+        console.error("Error fetching temperature:", err);
+        card.innerHTML = `Error <span class='small'>${err.message}</span>`;
+        card.className = "card yellow";
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchTemperature();
+      setInterval(fetchTemperature, 5000);
+    });
+  </script>
+</body>
 </html>
