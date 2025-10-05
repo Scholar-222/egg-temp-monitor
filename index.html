@@ -85,43 +85,38 @@
   </div>
 
   <script>
-    const EGGS = {
-      chicken: "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json",
-      duck: "https://raw.githubusercontent.com/Scholar-222/egg-data/refs/heads/main/duck.json"
-    };
+    const RAW_JSON_URL = "https://raw.githubusercontent.com/Scholar-222/egg-data/main/eggs.json";
 
-    async function fetchTemperature(id, url) {
-      const card = document.getElementById(id);
-      if (!card) return;
-
+    async function fetchTemperatures() {
       try {
-        const resp = await fetch(url + "?_=" + new Date().getTime());
+        const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
         if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
         const data = await resp.json();
-        const temp = Number(data.temperature);
 
-        card.innerHTML = `${temp}°C <span class="small">Updated: ${new Date().toLocaleTimeString()}</span>`;
+        // Loop through each egg (chicken, duck, quail)
+        for (const [bird, temp] of Object.entries(data)) {
+          const card = document.getElementById(bird);
+          if (!card) continue;
 
-        if (temp > 80) card.className = "card red";
-        else if (temp > 50) card.className = "card yellow";
-        else card.className = "card green";
+          card.innerHTML = `${temp}°C <span class="small">Updated: ${new Date().toLocaleTimeString()}</span>`;
+
+          if (temp > 80) card.className = "card red";
+          else if (temp > 50) card.className = "card yellow";
+          else card.className = "card green";
+        }
 
       } catch (err) {
-        console.error("Error fetching temperature:", err);
-        card.innerHTML = `Error <span class='small'>${err.message}</span>`;
-        card.className = "card yellow";
-      }
-    }
-
-    function updateAll() {
-      for (const [id, url] of Object.entries(EGGS)) {
-        fetchTemperature(id, url);
+        console.error("Error fetching temperatures:", err);
+        document.querySelectorAll(".card").forEach(c => {
+          c.innerHTML = `Error <span class='small'>${err.message}</span>`;
+          c.className = "card yellow";
+        });
       }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      updateAll();
-      setInterval(updateAll, 2000); // refresh every 2s
+      fetchTemperatures();
+      setInterval(fetchTemperatures, 2000);
     });
   </script>
 </body>
