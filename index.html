@@ -2,64 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🥚 Egg Temperature Monitor</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🥚 Multi-Egg Temperature Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: "Poppins", Arial, sans-serif;
-      background: linear-gradient(to right, #f7f9fc, #e6eef9);
+      background: linear-gradient(to bottom right, #fff5e1, #ffe6b3);
       text-align: center;
       padding: 60px;
     }
-    h1 { color:#333; margin-bottom:30px; }
 
-    /* Egg-shaped card */
-    .card {
-      display: inline-block;
-      padding: 60px 40px;
-      border-radius: 50% 50% 45% 45% / 60% 60% 55% 55%;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      font-size: 2.4rem;
-      font-weight: bold;
-      min-width: 150px;
-      min-height: 220px;
-      text-align: center;
-      line-height: 1.2;
-      transition: background 0.4s, color 0.4s;
-      vertical-align: middle;
+    h1 {
+      color: #444;
+      font-weight: 700;
+      margin-bottom: 40px;
     }
 
-    /* Darker colors with white text */
-    .green { background: #116633; color: white; }
-    .yellow { background: #b38600; color: white; }
-    .red { background: #990000; color: white; }
+    .eggs-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .card {
+      display: inline-block;
+      padding: 70px 50px;
+      border-radius: 50% 50% 45% 45% / 60% 60% 55% 55%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      font-size: 2rem;
+      font-weight: bold;
+      width: 160px;
+      height: 230px;
+      text-align: center;
+      line-height: 1.3;
+      transition: background 0.6s ease, color 0.6s ease, box-shadow 0.6s ease;
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+
+    .green { background: #116633; color: #fff; }
+    .yellow { background: #b38600; color: #fff; }
+    .red { background: #990000; color: #fff; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+      50% { box-shadow: 0 0 40px rgba(255,255,255,0.6); }
+      100% { box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+    }
+
+    .label {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
 
     .small {
-      font-size:0.6em;
-      display:block;
-      margin-top:10px;
-      font-weight:600;
-      opacity:0.8;
+      font-size: 0.6em;
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <h1>🥚 Egg Temperature Monitor</h1>
+  <h1>🥚 Multi-Egg Temperature Monitor</h1>
 
-  <div id="tempCard" class="card green">
-    Loading...
-    <span class="small">Fetching data...</span>
+  <div class="eggs-container">
+    <div>
+      <div class="label">🐔 Chicken</div>
+      <div id="chicken" class="card green">Loading...</div>
+    </div>
+    <div>
+      <div class="label">🦆 Duck</div>
+      <div id="duck" class="card green">Loading...</div>
+    </div>
+    <div>
+      <div class="label">🐦 Quail</div>
+      <div id="quail" class="card green">Loading...</div>
+    </div>
   </div>
 
   <script>
-    const RAW_JSON_URL = "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json";
+    const EGGS = {
+      chicken: "https://raw.githubusercontent.com/Scholar-222/egg-data/main/egg.json",
+      duck: "https://raw.githubusercontent.com/Scholar-222/egg-data/refs/heads/main/duck.json"
+    };
 
-    async function fetchTemperature() {
-      const card = document.getElementById("tempCard");
+    async function fetchTemperature(id, url) {
+      const card = document.getElementById(id);
       if (!card) return;
 
       try {
-        const resp = await fetch(RAW_JSON_URL + "?_=" + new Date().getTime());
+        const resp = await fetch(url + "?_=" + new Date().getTime());
         if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
         const data = await resp.json();
         const temp = Number(data.temperature);
@@ -77,9 +113,15 @@
       }
     }
 
+    function updateAll() {
+      for (const [id, url] of Object.entries(EGGS)) {
+        fetchTemperature(id, url);
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
-      fetchTemperature();
-      setInterval(fetchTemperature, 1000);
+      updateAll();
+      setInterval(updateAll, 2000); // refresh every 2s
     });
   </script>
 </body>
