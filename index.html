@@ -100,8 +100,8 @@
 
           card.innerHTML = `${temp}°C <span class="small">Updated: ${new Date().toLocaleTimeString()}</span>`;
 
-          if (temp > 80) card.className = "card red";
-          else if (temp > 50) card.className = "card yellow";
+          if (temp > 50) card.className = "card red";
+          else if (temp > 40 && temp <=50) card.className = "card yellow";
           else card.className = "card green";
         }
 
